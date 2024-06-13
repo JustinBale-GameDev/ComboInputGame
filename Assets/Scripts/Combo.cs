@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Combo : MonoBehaviour
+public class Combo
 {
     // Attributes
     public string Name {  get; private set; }
