@@ -6,7 +6,8 @@ using TMPro;
 
 public class ComboManager : MonoBehaviour
 {
-    public List<ScriptableObject> combos;
+	public List<ComboScriptableObject> allCombos; // List of all possible combos
+	public List<ComboScriptableObject> currentRoundCombos; // List of combos for the current round
     public int currentComboIndex;
     public Combo currentCombo;
 
@@ -21,31 +22,40 @@ public class ComboManager : MonoBehaviour
 	public Sprite downImage;
 
 	private PlayerInputHandler playerInputHandler;
-
+	private GameManager gameManager;
 
 	private void Start()
 	{
-		currentComboIndex = 0;
 		playerInputHandler = FindAnyObjectByType<PlayerInputHandler>();
-		LoadNextCombo();
+		gameManager = FindAnyObjectByType<GameManager>();
+	}
+
+	public void GenerateCombosForRound(int roundNumber)
+	{
+		// generate a fixed number of combos based on round number
+		currentRoundCombos = new List<ComboScriptableObject>();
+		int comboCount = Mathf.Min(roundNumber + 2, allCombos.Count); // Increase number of combos with each round
+		for (int i = 0; i < comboCount; i++)
+		{
+			currentRoundCombos.Add(allCombos[i]);
+		}
+		currentComboIndex = 0;
 	}
 
 	public void LoadNextCombo()
 	{
-		if (currentComboIndex < combos.Count)
+		if (currentComboIndex < currentRoundCombos.Count)
 		{
-			ComboScriptableObject comboSO = (ComboScriptableObject)combos[currentComboIndex];
+			ComboScriptableObject comboSO = currentRoundCombos[currentComboIndex];
 			currentCombo = new Combo(comboSO.comboName, comboSO.sequence, comboSO.image);
 			currentComboIndex++;
 			UpdateUI();
-			playerInputHandler.SetCurrentCombo(currentCombo); // Update the PlayerInputHandler with the new combo
-			//Debug.Log($"LoadNextCombo: New combo loaded - {currentCombo.GetName()}");
-			//Debug.Log($"Loaded combo sequence: {string.Join(", ", currentCombo.GetSequence())}");
+			playerInputHandler.SetCurrentCombo(currentCombo);
 		}
 		else
 		{
-			Debug.Log("All combos completed");
-			currentCombo = null;
+			Debug.Log("Round completed");
+			gameManager.OnRoundCompleted();
 		}
 	}
 
@@ -95,9 +105,9 @@ public class ComboManager : MonoBehaviour
 		for (int i = 0;i < upcomingComboImages.Length; i++)
 		{
 			int comboIndex = currentComboIndex + i;
-			if (comboIndex < combos.Count)
+			if (comboIndex < currentRoundCombos.Count)
 			{
-				ComboScriptableObject comboSO = (ComboScriptableObject)combos[comboIndex];
+				ComboScriptableObject comboSO = currentRoundCombos[comboIndex];
 				upcomingComboImages[i].sprite = comboSO.image;
 				upcomingComboImages[i].color = new Color(1, 1, 1, 1); // Set alpha to 1 (visible)
 			}

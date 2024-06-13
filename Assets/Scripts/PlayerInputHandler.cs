@@ -9,6 +9,7 @@ public class PlayerInputHandler : MonoBehaviour
     private Combo currentCombo;
     public int inputIndex;
     public ComboManager comboManager;
+	private GameManager gameManager;
     public InputActionAsset inputActions;
 	private InputAction comboActions;
 
@@ -32,6 +33,7 @@ public class PlayerInputHandler : MonoBehaviour
 	private void Start()
 	{
 		comboManager = FindObjectOfType<ComboManager>();
+		gameManager = FindObjectOfType<GameManager>();
         SetCurrentCombo(comboManager.GetCurrentCombo());
 	}
 
@@ -41,8 +43,6 @@ public class PlayerInputHandler : MonoBehaviour
         currentCombo = combo;
         inputIndex = 0;
         comboManager.UpdateUI();
-		//Debug.Log($"SetCurrentCombo: New combo set - {currentCombo.GetName()}");
-		//Debug.Log($"New combo sequence: {string.Join(", ", currentCombo.GetSequence())}");
 	}
 
     public void OnComboInput(InputAction.CallbackContext context)
@@ -81,7 +81,6 @@ public class PlayerInputHandler : MonoBehaviour
 		}
 
 		string mappedInput = MapInputToDirection(input);
-		//Debug.Log($"Handling input: {mappedInput}, expected: {currentCombo.GetSequence()[inputIndex]}");
 		if (mappedInput == currentCombo.GetSequence()[inputIndex])
         {
 			comboManager.comboImageSlots[inputIndex].color = new Color(0, 1, 0, 1); // Change color to indicate success
@@ -90,12 +89,17 @@ public class PlayerInputHandler : MonoBehaviour
             {
                 comboManager.LoadNextCombo();
                 SetCurrentCombo(comboManager.GetCurrentCombo());
+
+				gameManager.AddTime(2f); // Add time when a combo is completed
+				gameManager.AddScore(100); // Add score when a combo is completed
+
 				return "Combo Completed";
 			}
             return "Input Correct";
         }
         else
         {
+			gameManager.ReduceTime(2f);
 			ResetInput();
             return "Input Incorrect";
         }
