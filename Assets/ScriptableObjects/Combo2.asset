@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   comboName: Combo2
   sequence:
-  - right
-  - down
-  - left
-  - up
-  - right
+  - Right
+  - Down
+  - Left
+  - Up
+  - Right
   image: {fileID: 21300000, guid: 0ac274da743a5ab49a17c782a85c7f2d, type: 3}

@@ -11,18 +11,22 @@ public class ComboManager : MonoBehaviour
     public Combo currentCombo;
 
 	[Header("UI Elements")]
+	public Image[] comboImageSlots; // Array to hold all the spaces for the current combo input sequence. (Directional images will fill this up depending on the combo)
+	public Image[] upcomingComboImages; // Array to hold the upcoming combo images
 	public Image currentComboImage;
 	public TMP_Text currentComboName;
-	public Image[] comboImageSlots; // Array to hold all the spaces for the current combo input sequence. (Directional images will fill this up depending on the combo)
-	public Sprite leftImage; // Image representing left direction
-	public Sprite rightImage; // Image representing right direction
-	public Sprite upImage; // Image representing up direction
-	public Sprite downImage; // Image representing down direction
+	public Sprite leftImage;
+	public Sprite rightImage;
+	public Sprite upImage;
+	public Sprite downImage;
+
+	private PlayerInputHandler playerInputHandler;
 
 
 	private void Start()
 	{
 		currentComboIndex = 0;
+		playerInputHandler = FindAnyObjectByType<PlayerInputHandler>();
 		LoadNextCombo();
 	}
 
@@ -34,10 +38,14 @@ public class ComboManager : MonoBehaviour
 			currentCombo = new Combo(comboSO.comboName, comboSO.sequence, comboSO.image);
 			currentComboIndex++;
 			UpdateUI();
+			playerInputHandler.SetCurrentCombo(currentCombo); // Update the PlayerInputHandler with the new combo
+			//Debug.Log($"LoadNextCombo: New combo loaded - {currentCombo.GetName()}");
+			//Debug.Log($"Loaded combo sequence: {string.Join(", ", currentCombo.GetSequence())}");
 		}
 		else
 		{
 			Debug.Log("All combos completed");
+			currentCombo = null;
 		}
 	}
 
@@ -59,9 +67,10 @@ public class ComboManager : MonoBehaviour
 			else
 			{
 				comboImageSlots[i].color = new Color(1, 1, 1, 0); // Set alpha to 0 (invisible)
-				Debug.Log("Slot is empty");
 			}
 		}
+
+		UpdateUpcomingCombos();
 	}
 
 	private Sprite GetDirectionSprite(string direction)
@@ -69,19 +78,33 @@ public class ComboManager : MonoBehaviour
 		switch (direction.ToLower())
 		{
 			case "left":
-				Debug.Log("Assigning leftImage");
 				return leftImage;
 			case "right":
-				Debug.Log("Assigning rightImage");
 				return rightImage;
 			case "up":
-				Debug.Log("Assigning upImage");
 				return upImage;
 			case "down":
-				Debug.Log("Assigning downImage");
 				return downImage;
 			default:
 				return null;
+		}
+	}
+
+	private void UpdateUpcomingCombos()
+	{
+		for (int i = 0;i < upcomingComboImages.Length; i++)
+		{
+			int comboIndex = currentComboIndex + i;
+			if (comboIndex < combos.Count)
+			{
+				ComboScriptableObject comboSO = (ComboScriptableObject)combos[comboIndex];
+				upcomingComboImages[i].sprite = comboSO.image;
+				upcomingComboImages[i].color = new Color(1, 1, 1, 1); // Set alpha to 1 (visible)
+			}
+			else
+			{
+				upcomingComboImages[i].color = new Color(1, 1, 1, 0); // Set alpha to 0 (invisible)
+			}
 		}
 	}
 
