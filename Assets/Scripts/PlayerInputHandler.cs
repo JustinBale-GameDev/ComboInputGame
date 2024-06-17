@@ -17,28 +17,14 @@ public class PlayerInputHandler : MonoBehaviour
 	private InputAction rightAction;
 	private string inputName;
 
+	public bool inPlay = true;
+
 	private void Awake()
 	{
 		upAction = inputActions.FindActionMap("Gameplay").FindAction("Up");
 		downAction = inputActions.FindActionMap("Gameplay").FindAction("Down");
 		leftAction = inputActions.FindActionMap("Gameplay").FindAction("Left");
 		rightAction = inputActions.FindActionMap("Gameplay").FindAction("Right");
-	}
-
-	private void OnEnable()
-	{
-		upAction.Enable();
-		downAction.Enable();
-		leftAction.Enable();
-		rightAction.Enable();
-	}
-
-	private void OnDisable()
-	{
-		upAction.Disable();
-		downAction.Disable();
-		leftAction.Disable();
-		rightAction.Disable();
 	}
 
 	private void Start()
@@ -48,27 +34,31 @@ public class PlayerInputHandler : MonoBehaviour
         SetCurrentCombo(comboManager.GetCurrentCombo());
 	}
 
-	//TEST
 	private void Update()
 	{
-		if (upAction.WasPressedThisFrame())
+		if (inPlay)
 		{
-			inputName = upAction.name;
-			Debug.Log(HandleInput(inputName));
+			CheckInput(upAction);
+			CheckInput(downAction);
+			CheckInput(leftAction);
+			CheckInput(rightAction);
 		}
-		if (downAction.WasPressedThisFrame())
+	}
+
+	public void IsPlaying()
+	{
+		inPlay = true;
+	}
+	public void IsNotPlaying()
+	{
+		inPlay = false;
+	}
+
+	private void CheckInput(InputAction action)
+	{
+		if (action.WasPressedThisFrame())
 		{
-			inputName = downAction.name;
-			Debug.Log(HandleInput(inputName));
-		}
-		if (leftAction.WasPressedThisFrame())
-		{
-			inputName = leftAction.name;
-			Debug.Log(HandleInput(inputName));
-		}
-		if (rightAction.WasPressedThisFrame())
-		{
-			inputName = rightAction.name;
+			inputName = action.name;
 			Debug.Log(HandleInput(inputName));
 		}
 	}
@@ -79,15 +69,6 @@ public class PlayerInputHandler : MonoBehaviour
         currentCombo = combo;
         inputIndex = 0;
         comboManager.UpdateUI();
-	}
-
-	public void OnComboInput(InputAction.CallbackContext context)
-	{
-		if (context.performed)
-		{
-			string input = context.control.name;
-			Debug.Log(HandleInput(input));
-		}
 	}
 
 	// Method of handle player input
@@ -116,8 +97,9 @@ public class PlayerInputHandler : MonoBehaviour
         }
         else
         {
-			gameManager.ReduceTime(3f);
+			gameManager.ReduceTime(1f);
 			gameManager.ReduceScore(25);
+			gameManager.AddError();
 			ResetInput();
             return "Input Incorrect";
         }
@@ -141,4 +123,20 @@ public class PlayerInputHandler : MonoBehaviour
 			}
 		}
     }
+
+	private void OnEnable()
+	{
+		upAction.Enable();
+		downAction.Enable();
+		leftAction.Enable();
+		rightAction.Enable();
+	}
+
+	private void OnDisable()
+	{
+		upAction.Disable();
+		downAction.Disable();
+		leftAction.Disable();
+		rightAction.Disable();
+	}
 }

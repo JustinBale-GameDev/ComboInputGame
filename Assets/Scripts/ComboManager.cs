@@ -37,7 +37,8 @@ public class ComboManager : MonoBehaviour
 		int comboCount = Mathf.Min(roundNumber + 2, allCombos.Count); // Increase number of combos with each round (TODO: Cap at 8 total combos for a single round(For now??))
 		for (int i = 0; i < comboCount; i++)
 		{
-			currentRoundCombos.Add(allCombos[i]);
+			int randomNumber = Random.Range(0, allCombos.Count); // Choose a random combo to be put in the curren round combo list
+			currentRoundCombos.Add(allCombos[randomNumber]);
 		}
 		currentComboIndex = 0;
 	}
