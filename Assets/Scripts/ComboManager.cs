@@ -6,8 +6,8 @@ using TMPro;
 
 public class ComboManager : MonoBehaviour
 {
-	public List<ComboScriptableObject> allCombos; // List of all possible combos
-	public List<ComboScriptableObject> currentRoundCombos; // List of combos for the current round
+	public List<ComboScriptableObject> allCombos; // All possible combos
+	public List<ComboScriptableObject> currentRoundCombos; // Combos for the current round
     public int currentComboIndex;
     public Combo currentCombo;
 
@@ -34,7 +34,7 @@ public class ComboManager : MonoBehaviour
 	{
 		// generate a fixed number of combos based on round number
 		currentRoundCombos = new List<ComboScriptableObject>();
-		int comboCount = Mathf.Min(roundNumber + 2, allCombos.Count); // Increase number of combos with each round
+		int comboCount = Mathf.Min(roundNumber + 2, allCombos.Count); // Increase number of combos with each round (TODO: Cap at 8 total combos for a single round(For now??))
 		for (int i = 0; i < comboCount; i++)
 		{
 			currentRoundCombos.Add(allCombos[i]);
@@ -54,7 +54,7 @@ public class ComboManager : MonoBehaviour
 		}
 		else
 		{
-			Debug.Log("Round completed");
+			Debug.Log("ROUND COMPLETED");
 			gameManager.OnRoundCompleted();
 		}
 	}
@@ -72,7 +72,7 @@ public class ComboManager : MonoBehaviour
 			if (i < sequence.Count)
 			{
 				comboImageSlots[i].sprite = GetDirectionSprite(sequence[i]);
-				comboImageSlots[i].color = new Color(1, 1, 1, 1); // Set alpha to 1 (visible)
+				comboImageSlots[i].color = new Color(1, 1, 0, 1); // Set alpha to 1 (visible)
 			}
 			else
 			{
@@ -109,7 +109,7 @@ public class ComboManager : MonoBehaviour
 			{
 				ComboScriptableObject comboSO = currentRoundCombos[comboIndex];
 				upcomingComboImages[i].sprite = comboSO.image;
-				upcomingComboImages[i].color = new Color(1, 1, 1, 1); // Set alpha to 1 (visible)
+				upcomingComboImages[i].color = new Color(1, 1, 0, 1); // Set alpha to 1 (visible)
 			}
 			else
 			{

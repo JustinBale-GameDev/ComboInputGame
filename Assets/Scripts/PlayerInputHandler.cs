@@ -2,32 +2,43 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Windows;
 
 public class PlayerInputHandler : MonoBehaviour
 {
-    // Attributes
     private Combo currentCombo;
     public int inputIndex;
     public ComboManager comboManager;
 	private GameManager gameManager;
     public InputActionAsset inputActions;
-	private InputAction comboActions;
+	private InputAction upAction;
+	private InputAction downAction;
+	private InputAction leftAction;
+	private InputAction rightAction;
+	private string inputName;
 
 	private void Awake()
 	{
-		comboActions = inputActions.FindActionMap("Gameplay").FindAction("ComboInputs");
+		upAction = inputActions.FindActionMap("Gameplay").FindAction("Up");
+		downAction = inputActions.FindActionMap("Gameplay").FindAction("Down");
+		leftAction = inputActions.FindActionMap("Gameplay").FindAction("Left");
+		rightAction = inputActions.FindActionMap("Gameplay").FindAction("Right");
 	}
 
 	private void OnEnable()
 	{
-		comboActions.performed += OnComboInput;
-		comboActions.Enable();
+		upAction.Enable();
+		downAction.Enable();
+		leftAction.Enable();
+		rightAction.Enable();
 	}
 
 	private void OnDisable()
 	{
-		comboActions.performed -= OnComboInput;
-		comboActions.Disable();
+		upAction.Disable();
+		downAction.Disable();
+		leftAction.Disable();
+		rightAction.Disable();
 	}
 
 	private void Start()
@@ -35,6 +46,31 @@ public class PlayerInputHandler : MonoBehaviour
 		comboManager = FindObjectOfType<ComboManager>();
 		gameManager = FindObjectOfType<GameManager>();
         SetCurrentCombo(comboManager.GetCurrentCombo());
+	}
+
+	//TEST
+	private void Update()
+	{
+		if (upAction.WasPressedThisFrame())
+		{
+			inputName = upAction.name;
+			Debug.Log(HandleInput(inputName));
+		}
+		if (downAction.WasPressedThisFrame())
+		{
+			inputName = downAction.name;
+			Debug.Log(HandleInput(inputName));
+		}
+		if (leftAction.WasPressedThisFrame())
+		{
+			inputName = leftAction.name;
+			Debug.Log(HandleInput(inputName));
+		}
+		if (rightAction.WasPressedThisFrame())
+		{
+			inputName = rightAction.name;
+			Debug.Log(HandleInput(inputName));
+		}
 	}
 
 	// Method to set the current combo
@@ -45,30 +81,12 @@ public class PlayerInputHandler : MonoBehaviour
         comboManager.UpdateUI();
 	}
 
-    public void OnComboInput(InputAction.CallbackContext context)
-    {
-        if (context.performed)
-        {
-            string input = context.control.name;
-			Debug.Log(HandleInput(input));
-        }
-    }
-
-	// Method to map input keys to directions
-	private string MapInputToDirection(string input)
+	public void OnComboInput(InputAction.CallbackContext context)
 	{
-		switch (input)
+		if (context.performed)
 		{
-			case "w":
-				return "Up";
-			case "a":
-				return "Left";
-			case "s":
-				return "Down";
-			case "d":
-				return "Right";
-			default:
-				return "";
+			string input = context.control.name;
+			Debug.Log(HandleInput(input));
 		}
 	}
 
@@ -80,8 +98,7 @@ public class PlayerInputHandler : MonoBehaviour
 			return "No current combo";
 		}
 
-		string mappedInput = MapInputToDirection(input);
-		if (mappedInput == currentCombo.GetSequence()[inputIndex])
+		if (input == currentCombo.GetSequence()[inputIndex])
         {
 			comboManager.comboImageSlots[inputIndex].color = new Color(0, 1, 0, 1); // Change color to indicate success
             inputIndex++;
@@ -90,7 +107,7 @@ public class PlayerInputHandler : MonoBehaviour
                 comboManager.LoadNextCombo();
                 SetCurrentCombo(comboManager.GetCurrentCombo());
 
-				gameManager.AddTime(2f); // Add time when a combo is completed
+				gameManager.AddTime(0.5f); // Add time when a combo is completed
 				gameManager.AddScore(100); // Add score when a combo is completed
 
 				return "Combo Completed";
@@ -99,7 +116,8 @@ public class PlayerInputHandler : MonoBehaviour
         }
         else
         {
-			gameManager.ReduceTime(2f);
+			gameManager.ReduceTime(3f);
+			gameManager.ReduceScore(25);
 			ResetInput();
             return "Input Incorrect";
         }

@@ -64,7 +64,7 @@ public class GameManager : MonoBehaviour
     public void ReduceTime(float amount)
     {
         timer -= amount;
-    }
+	}
 
     public void AddScore(int points)
     {
@@ -72,13 +72,23 @@ public class GameManager : MonoBehaviour
         UpdateScoreUI();
     }
 
+    public void ReduceScore(int points)
+    {
+        if (score > 0)
+        {
+			score -= points;
+		}
+		UpdateScoreUI();
+	}
+
     public void StartNewRound()
     {
         timer = 20f;
         comboManager.GenerateCombosForRound(currentRound);
         comboManager.LoadNextCombo();
         UpdateRoundUI();
-    }
+		UpdateScoreUI();
+	}
 
     public void OnRoundCompleted()
     {
