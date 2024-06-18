@@ -16,15 +16,27 @@ public class GameManager : MonoBehaviour
 	public TMP_Text timerText;
     public TMP_Text scoreText;
     public TMP_Text gameOverScoreText;
-    public TMP_Text gameOverErrorsText;
+    public TMP_Text gameOverTotalRoundsText;
     public TMP_Text roundText;
     public TMP_Text roundSummaryText;
-    public Image timerBarVisual;
+	public TMP_Text roundBonusText;
+	public TMP_Text roundBonusValueText;
+	public TMP_Text timeBonusText;
+	public TMP_Text timeBonusValueText;
+	public TMP_Text perfectBonusText;
+	public TMP_Text perfectBonusValueText;
+	public TMP_Text totalScoreText;
+	public TMP_Text totalScoreValueText;
+
+	public Image timerBarVisual;
     public Image timerBarColorChanger;
 
     public GameObject gameOverPanel;
     public GameObject gameStartPanel;
     public GameObject roundPausePanel;
+
+	public AudioSource gameOverAudioSource;
+	public AudioSource roundCompleteAudioSource;
 
 	public Color startColor = Color.green; // Start color (max time)
 	public Color endColor = Color.red; // End color (no time left)
@@ -107,11 +119,12 @@ public class GameManager : MonoBehaviour
 
     void GameOver()
     {
-        isGameActive = false;
+		gameOverAudioSource.Play();
+		isGameActive = false;
         playerInputHandler.IsNotPlaying(); // Disables input for combo directions
         gameOverPanel.SetActive(true);
-		gameOverScoreText.text = "Score: " + Mathf.FloorToInt(score).ToString();
-        gameOverErrorsText.text = "Total Errors: " + totalErrors.ToString();
+		gameOverTotalRoundsText.text = "Rounds Completed: " + (currentRound - 1).ToString(); // minus 1 from current round to reflect completed rounds
+		gameOverScoreText.text = "Total Score: " + Mathf.FloorToInt(score).ToString();
     }
 
     public void AddTime(float amount)
@@ -142,7 +155,7 @@ public class GameManager : MonoBehaviour
     public void StartNewRound()
     {
 		currentTimeLeft = maxTime;
-        roundErrors = 0; // Rest round errors
+        roundErrors = 0; // Reset round errors
         perfectCombos = 0;
         comboManager.GenerateCombosForRound(currentRound);
         comboManager.LoadNextCombo();
@@ -152,10 +165,11 @@ public class GameManager : MonoBehaviour
 
     public void OnRoundCompleted()
     {
+        roundCompleteAudioSource.Play();
         isGameActive = false;
         isBetweenRounds = true;
         playerInputHandler.IsNotPlaying();
-        DisplayRoundSummary();
+        StartCoroutine(DisplayRoundSummary());
         roundPausePanel.SetActive(true);
         currentRound++;
         StartNewRound();
@@ -163,7 +177,17 @@ public class GameManager : MonoBehaviour
 
     public void ResumeGame()
     {
-        isGameActive = true;
+        // Reset round end text elements so they appear empty next time
+        roundBonusText.text = "";
+		roundBonusValueText.text = "";
+		timeBonusText.text = "";
+		timeBonusValueText.text = "";
+		perfectBonusText.text = "";
+		perfectBonusValueText.text = "";
+		totalScoreText.text = "";
+		totalScoreValueText.text = "";
+
+		isGameActive = true;
         isBetweenRounds = false;
         playerInputHandler.IsPlaying();
         roundPausePanel.SetActive(false);
@@ -183,6 +207,7 @@ public class GameManager : MonoBehaviour
 		gameOverPanel.SetActive(false);
         gameStartPanel.SetActive(false);
         roundPausePanel.SetActive(false);
+
 		UpdateScoreUI();
         UpdateRoundUI();
         StartNewRound();
@@ -200,24 +225,39 @@ public class GameManager : MonoBehaviour
         totalPerfectCombos++;
     }
 
-    private void DisplayRoundSummary()
+    private IEnumerator DisplayRoundSummary()
     {
-		StartCoroutine(ShowText("Score: " + Mathf.FloorToInt(score) + "\n" +
-								$"Time Remaining: {currentTimeLeft:F2}s\n" +
-								"Errors: " + roundErrors + "\n" +
-								"Perfect Combos: " + perfectCombos, roundSummaryText));
+        // Calculate bonuses
+        int roundBonus = Mathf.Max(100 - roundErrors * 10, 0);
+        int timeBonus = Mathf.FloorToInt(currentTimeLeft * 5);
+        int perfectBonus = perfectCombos * 20;
+        int totalRoundScore = score + roundBonus + timeBonus + perfectBonus;
+        score = totalRoundScore;
+
+        // Update UI
+        roundBonusText.text = "Round Bonus";
+		roundBonusValueText.text = roundBonus.ToString();
+		yield return new WaitForSeconds(0.75f);
+        timeBonusText.text = "Time Bonus";
+		timeBonusValueText.text = timeBonus.ToString();
+		yield return new WaitForSeconds(0.75f);
+        perfectBonusText.text = "Perfect Bonus";
+		perfectBonusValueText.text = perfectBonus.ToString();
+		yield return new WaitForSeconds(0.75f);
+        totalScoreText.text = "Total Score";
+		totalScoreValueText.text = score.ToString();
 	}
 
-	IEnumerator ShowText(string text, TMP_Text textComponent)
-	{
-		textComponent.text = "";
+	//IEnumerator ShowText(string text, TMP_Text textComponent)
+	//{
+	//	textComponent.text = "";
 
-		foreach (char c in text)
-		{
-			textComponent.text += c;
-			yield return new WaitForSecondsRealtime(0.03f);
-		}
-	}
+	//	foreach (char c in text)
+	//	{
+	//		textComponent.text += c;
+	//		yield return new WaitForSecondsRealtime(0.03f);
+	//	}
+	//}
 
 	private void OnEnable()
 	{

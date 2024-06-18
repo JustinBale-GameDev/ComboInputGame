@@ -20,7 +20,8 @@ public class PlayerInputHandler : MonoBehaviour
 	public bool inPlay = true;
 	private bool isComboPerfect = true;
 
-	public AudioSource inputAudioClip;
+	public AudioSource correctInputAudioSource;
+	public AudioSource incorrectInputAudioSource;
 
 	private void Awake()
 	{
@@ -83,11 +84,11 @@ public class PlayerInputHandler : MonoBehaviour
 			return "No current combo";
 		}
 
-		inputAudioClip.Play();
-
 		if (input == currentCombo.GetSequence()[inputIndex])
         {
 			comboManager.comboImageSlots[inputIndex].color = new Color(0, 1, 0, 1); // Change color to indicate success
+			correctInputAudioSource.Play(); // Sound for correct input
+
 			inputIndex++;
             if (inputIndex == currentCombo.GetSequence().Count)
             {
@@ -99,7 +100,7 @@ public class PlayerInputHandler : MonoBehaviour
                 SetCurrentCombo(comboManager.GetCurrentCombo());
 
 				gameManager.AddTime(1f); // Add time when a combo is completed
-				gameManager.AddScore(100); // Add score when a combo is completed
+				gameManager.AddScore(10); // Add score when a combo is completed
 
 				return "Combo Completed";
 			}
@@ -107,9 +108,11 @@ public class PlayerInputHandler : MonoBehaviour
         }
         else
         {
+			incorrectInputAudioSource.Play(); // Sound for incorrect input
+
 			isComboPerfect = false; // Mark combo as imperfect
 			gameManager.ReduceTime(0.5f);
-			gameManager.ReduceScore(25);
+			gameManager.ReduceScore(5);
 			gameManager.AddError();
 			ResetInput();
             return "Input Incorrect";
@@ -135,10 +138,10 @@ public class PlayerInputHandler : MonoBehaviour
 			}
 		}
 
-		// Turn images leading up to mistake red
+		// Change color to red for all inputs leading up to incorrect input
 		for (int i = 0; i < lengthOfMistake; i++)
 		{
-			comboManager.comboImageSlots[i].color = new Color(1, 0, 0, 1); // Change color to red for incorrect input
+			comboManager.comboImageSlots[i].color = new Color(1, 0, 0, 1);
 		}
 	}
 
