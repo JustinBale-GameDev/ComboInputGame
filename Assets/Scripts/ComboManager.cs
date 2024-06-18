@@ -34,7 +34,7 @@ public class ComboManager : MonoBehaviour
 	{
 		// generate a fixed number of combos based on round number
 		currentRoundCombos = new List<ComboScriptableObject>();
-		int comboCount = Mathf.Min(roundNumber + 2, allCombos.Count); // Increase number of combos with each round (TODO: Cap at 8 total combos for a single round(For now??))
+		int comboCount = Mathf.Min(roundNumber + 2, comboImageSlots.Length + 1); // Increase number of combos with each round (TODO: Cap at 8 total combos for a single round(For now??))
 		for (int i = 0; i < comboCount; i++)
 		{
 			int randomNumber = Random.Range(0, allCombos.Count); // Choose a random combo to be put in the curren round combo list
@@ -65,6 +65,7 @@ public class ComboManager : MonoBehaviour
 		if (currentCombo == null) return;
 
 		currentComboImage.sprite = currentCombo.GetImage();
+		//currentComboImage.color = new Color(1, 1, 0, 1); // Change current combo image to yellow
 		currentComboName.text = currentCombo.GetName();
 
 		List<string> sequence = currentCombo.GetSequence();
@@ -73,11 +74,13 @@ public class ComboManager : MonoBehaviour
 			if (i < sequence.Count)
 			{
 				comboImageSlots[i].sprite = GetDirectionSprite(sequence[i]);
-				comboImageSlots[i].color = new Color(1, 1, 0, 1); // Set alpha to 1 (visible)
+				comboImageSlots[i].color = new Color(1, 1, 1, 1); // Set alpha to 1 (visible) ---- Color(1,1,0,1) for yellow
+				comboImageSlots[i].gameObject.SetActive(true); // Enable the image
 			}
 			else
 			{
-				comboImageSlots[i].color = new Color(1, 1, 1, 0); // Set alpha to 0 (invisible)
+				//comboImageSlots[i].color = new Color(1, 1, 1, 0); // Set alpha to 0 (invisible)
+				comboImageSlots[i].gameObject.SetActive(false); // Disable the image
 			}
 		}
 
@@ -110,7 +113,7 @@ public class ComboManager : MonoBehaviour
 			{
 				ComboScriptableObject comboSO = currentRoundCombos[comboIndex];
 				upcomingComboImages[i].sprite = comboSO.image;
-				upcomingComboImages[i].color = new Color(1, 1, 0, 1); // Set alpha to 1 (visible)
+				upcomingComboImages[i].color = new Color(1, 1, 1, 1); // Set alpha to 1 (visible)
 			}
 			else
 			{

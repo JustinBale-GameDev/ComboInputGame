@@ -18,7 +18,6 @@ public class GameManager : MonoBehaviour
     public TMP_Text gameOverScoreText;
     public TMP_Text gameOverTotalRoundsText;
     public TMP_Text roundText;
-    public TMP_Text roundSummaryText;
 	public TMP_Text roundBonusText;
 	public TMP_Text roundBonusValueText;
 	public TMP_Text timeBonusText;
@@ -43,15 +42,16 @@ public class GameManager : MonoBehaviour
 
 	private bool isGameActive = false;
     private bool isBetweenRounds = false;
+	private bool isDisplayingRoundSummary = false;
 
-    private int score = 0;
+	private int score = 0;
     private int currentRound = 1;
     private int totalErrors = 0; // Track total errors
     private int roundErrors = 0; // Track errors per round
     private int perfectCombos = 0;
     private int totalPerfectCombos = 0;
 
-	public float maxTime = 10f; // Initial timer value
+	public float maxTime = 15f; // Initial timer value
 	public float currentTimeLeft;
 
 
@@ -84,7 +84,7 @@ public class GameManager : MonoBehaviour
             UpdateTimerUI();
         }
 
-        if (!isGameActive && playGameAction.WasPressedThisFrame())
+        if (!isGameActive && playGameAction.WasPressedThisFrame() && !isDisplayingRoundSummary)
         {
             if (isBetweenRounds)
             {
@@ -168,7 +168,8 @@ public class GameManager : MonoBehaviour
         roundCompleteAudioSource.Play();
         isGameActive = false;
         isBetweenRounds = true;
-        playerInputHandler.IsNotPlaying();
+		isDisplayingRoundSummary = true;
+		playerInputHandler.IsNotPlaying();
         StartCoroutine(DisplayRoundSummary());
         roundPausePanel.SetActive(true);
         currentRound++;
@@ -246,6 +247,9 @@ public class GameManager : MonoBehaviour
 		yield return new WaitForSeconds(0.75f);
         totalScoreText.text = "Total Score";
 		totalScoreValueText.text = score.ToString();
+
+		// Allow proceeding to the next round
+		isDisplayingRoundSummary = false;
 	}
 
 	//IEnumerator ShowText(string text, TMP_Text textComponent)
