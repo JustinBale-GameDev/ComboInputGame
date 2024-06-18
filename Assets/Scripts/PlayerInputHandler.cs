@@ -18,6 +18,9 @@ public class PlayerInputHandler : MonoBehaviour
 	private string inputName;
 
 	public bool inPlay = true;
+	private bool isComboPerfect = true;
+
+	public AudioSource inputAudioClip;
 
 	private void Awake()
 	{
@@ -68,6 +71,7 @@ public class PlayerInputHandler : MonoBehaviour
     {
         currentCombo = combo;
         inputIndex = 0;
+		isComboPerfect = true;
         comboManager.UpdateUI();
 	}
 
@@ -79,16 +83,22 @@ public class PlayerInputHandler : MonoBehaviour
 			return "No current combo";
 		}
 
+		inputAudioClip.Play();
+
 		if (input == currentCombo.GetSequence()[inputIndex])
         {
 			comboManager.comboImageSlots[inputIndex].color = new Color(0, 1, 0, 1); // Change color to indicate success
-            inputIndex++;
+			inputIndex++;
             if (inputIndex == currentCombo.GetSequence().Count)
             {
+				if (isComboPerfect)
+				{
+					gameManager.AddPerfectCombo(); // Track perfect combo
+				}
                 comboManager.LoadNextCombo();
                 SetCurrentCombo(comboManager.GetCurrentCombo());
 
-				gameManager.AddTime(0.5f); // Add time when a combo is completed
+				gameManager.AddTime(1f); // Add time when a combo is completed
 				gameManager.AddScore(100); // Add score when a combo is completed
 
 				return "Combo Completed";
@@ -97,7 +107,8 @@ public class PlayerInputHandler : MonoBehaviour
         }
         else
         {
-			gameManager.ReduceTime(1f);
+			isComboPerfect = false; // Mark combo as imperfect
+			gameManager.ReduceTime(0.5f);
 			gameManager.ReduceScore(25);
 			gameManager.AddError();
 			ResetInput();
@@ -105,9 +116,10 @@ public class PlayerInputHandler : MonoBehaviour
         }
     }
 
-    // Method to reset input index and image alpha
-    public void ResetInput()
+	// Method to reset input index and image alpha
+	public void ResetInput()
     {
+		int lengthOfMistake = inputIndex;
         inputIndex = 0;
 
 		// Reset the colors of the combo images
@@ -122,7 +134,13 @@ public class PlayerInputHandler : MonoBehaviour
 				comboManager.comboImageSlots[i].color = new Color(1, 1, 1, 0); // Set alpha to 0 for empty slots
 			}
 		}
-    }
+
+		// Turn images leading up to mistake red
+		for (int i = 0; i < lengthOfMistake; i++)
+		{
+			comboManager.comboImageSlots[i].color = new Color(1, 0, 0, 1); // Change color to red for incorrect input
+		}
+	}
 
 	private void OnEnable()
 	{
