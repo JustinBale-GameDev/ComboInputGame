@@ -20,8 +20,10 @@ public class PlayerInputHandler : MonoBehaviour
 	public bool inPlay = true;
 	private bool isComboPerfect = true;
 
+	[Header("Audio")]
 	public AudioSource correctInputAudioSource;
 	public AudioSource incorrectInputAudioSource;
+	public AudioSource comboCompleteAudioSource;
 
 	private void Awake()
 	{
@@ -99,8 +101,10 @@ public class PlayerInputHandler : MonoBehaviour
                 comboManager.LoadNextCombo();
                 SetCurrentCombo(comboManager.GetCurrentCombo());
 
-				gameManager.AddTime(1f); // Add time when a combo is completed
+				gameManager.AddTime(0.75f); // Add time when a combo is completed
 				gameManager.AddScore(10); // Add score when a combo is completed
+
+				comboCompleteAudioSource.Play();
 
 				return "Combo Completed";
 			}
@@ -111,7 +115,7 @@ public class PlayerInputHandler : MonoBehaviour
 			incorrectInputAudioSource.Play(); // Sound for incorrect input
 
 			isComboPerfect = false; // Mark combo as imperfect
-			gameManager.ReduceTime(0.5f);
+			gameManager.ReduceTime(1f);
 			gameManager.ReduceScore(5);
 			gameManager.AddError();
 			ResetInput();

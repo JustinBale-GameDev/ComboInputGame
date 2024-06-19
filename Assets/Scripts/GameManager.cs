@@ -12,7 +12,9 @@ public class GameManager : MonoBehaviour
 
 	public InputActionAsset inputActions;
 	private InputAction playGameAction;
+    private InputAction openCloseComboPanel;
 
+	[Header("UI Elements")]
 	public TMP_Text timerText;
     public TMP_Text scoreText;
     public TMP_Text gameOverScoreText;
@@ -30,12 +32,16 @@ public class GameManager : MonoBehaviour
 	public Image timerBarVisual;
     public Image timerBarColorChanger;
 
-    public GameObject gameOverPanel;
+	[Header("UI Panels")]
+	public GameObject gameOverPanel;
     public GameObject gameStartPanel;
     public GameObject roundPausePanel;
+    public GameObject comboDisplayPanel;
 
+	[Header("Audio")]
 	public AudioSource gameOverAudioSource;
 	public AudioSource roundCompleteAudioSource;
+	public AudioSource backgroundMusicAudioSource;
 
 	public Color startColor = Color.green; // Start color (max time)
 	public Color endColor = Color.red; // End color (no time left)
@@ -43,6 +49,7 @@ public class GameManager : MonoBehaviour
 	private bool isGameActive = false;
     private bool isBetweenRounds = false;
 	private bool isDisplayingRoundSummary = false;
+    private bool isComboDisplayPanelActive = false;
 
 	private int score = 0;
     private int currentRound = 1;
@@ -51,6 +58,7 @@ public class GameManager : MonoBehaviour
     private int perfectCombos = 0;
     private int totalPerfectCombos = 0;
 
+	[Header("Round Info")]
 	public float maxTime = 15f; // Initial timer value
 	public float currentTimeLeft;
 
@@ -59,6 +67,7 @@ public class GameManager : MonoBehaviour
 	private void Awake()
 	{
 		playGameAction = inputActions.FindActionMap("Gameplay").FindAction("PlayGame");
+		openCloseComboPanel = inputActions.FindActionMap("Gameplay").FindAction("OpenCloseCombos");
 	}
 
 	private void Start()
@@ -66,9 +75,10 @@ public class GameManager : MonoBehaviour
 		comboManager = FindAnyObjectByType<ComboManager>();
 		playerInputHandler = FindAnyObjectByType<PlayerInputHandler>();
 		StartNewRound();
-        gameOverPanel.SetActive(false); // Gameover panel hidden at the start
-        gameStartPanel.SetActive(true);
+		gameStartPanel.SetActive(true);
+		gameOverPanel.SetActive(false);
         roundPausePanel.SetActive(false);
+		comboDisplayPanel.SetActive(false);
 	}
 
 	private void Update()
@@ -84,7 +94,7 @@ public class GameManager : MonoBehaviour
             UpdateTimerUI();
         }
 
-        if (!isGameActive && playGameAction.WasPressedThisFrame() && !isDisplayingRoundSummary)
+        if (!isGameActive && playGameAction.WasPressedThisFrame() && !isDisplayingRoundSummary && !isComboDisplayPanelActive)
         {
             if (isBetweenRounds)
             {
@@ -95,6 +105,11 @@ public class GameManager : MonoBehaviour
 				RestartGame();
 			}
         }
+
+		if (openCloseComboPanel.WasPressedThisFrame() && !isGameActive)
+		{
+			ToggleComboDisplayPanel();
+		}
 	}
 
     void UpdateTimerUI()
@@ -165,7 +180,9 @@ public class GameManager : MonoBehaviour
 
     public void OnRoundCompleted()
     {
-        roundCompleteAudioSource.Play();
+		backgroundMusicAudioSource.volume = 0.1f;
+
+		roundCompleteAudioSource.Play();
         isGameActive = false;
         isBetweenRounds = true;
 		isDisplayingRoundSummary = true;
@@ -192,7 +209,8 @@ public class GameManager : MonoBehaviour
         isBetweenRounds = false;
         playerInputHandler.IsPlaying();
         roundPausePanel.SetActive(false);
-        StartNewRound();
+		backgroundMusicAudioSource.volume = 0.2f;
+		StartNewRound();
     }
 
 	public void RestartGame()
@@ -252,24 +270,45 @@ public class GameManager : MonoBehaviour
 		isDisplayingRoundSummary = false;
 	}
 
-	//IEnumerator ShowText(string text, TMP_Text textComponent)
-	//{
-	//	textComponent.text = "";
+	private void ToggleComboDisplayPanel()
+	{
+		isComboDisplayPanelActive = !isComboDisplayPanelActive;
+		comboDisplayPanel.SetActive(isComboDisplayPanelActive);
 
-	//	foreach (char c in text)
-	//	{
-	//		textComponent.text += c;
-	//		yield return new WaitForSecondsRealtime(0.03f);
-	//	}
-	//}
+		// Disable other UI and game activities when the combo display panel is active
+		if (isComboDisplayPanelActive)
+		{
+			if (gameStartPanel.activeSelf)
+			{
+				gameStartPanel.SetActive(false);
+			}
+			else if (gameOverPanel.activeSelf)
+			{
+				gameOverPanel.SetActive(false);
+			}
+		}
+		else
+		{
+			if (isBetweenRounds)
+			{
+				gameOverPanel.SetActive(true);
+			}
+			else
+			{
+				gameStartPanel.SetActive(true);
+			}
+		}
+	}
 
 	private void OnEnable()
 	{
 		playGameAction.Enable();
+		openCloseComboPanel.Enable();
 	}
 
 	private void OnDisable()
 	{
 		playGameAction.Disable();
+		openCloseComboPanel.Disable();
 	}
 }

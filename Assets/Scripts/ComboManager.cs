@@ -34,7 +34,7 @@ public class ComboManager : MonoBehaviour
 	{
 		// generate a fixed number of combos based on round number
 		currentRoundCombos = new List<ComboScriptableObject>();
-		int comboCount = Mathf.Min(roundNumber + 2, comboImageSlots.Length + 1); // Increase number of combos with each round (TODO: Cap at 8 total combos for a single round(For now??))
+		int comboCount = Mathf.Min(roundNumber + 3, comboImageSlots.Length + 2); // Increase number of combos with each round (TODO: Cap at 8 total combos for a single round(For now??))
 		for (int i = 0; i < comboCount; i++)
 		{
 			int randomNumber = Random.Range(0, allCombos.Count); // Choose a random combo to be put in the curren round combo list

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1d7f6956c736b342a235747a8099697, type: 3}
   m_Name: Combo_10
   m_EditorClassIdentifier: 
-  comboName: Backstrab
+  comboName: Backstab
   sequence:
   - Right
   - Left
